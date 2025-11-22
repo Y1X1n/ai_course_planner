@@ -1,0 +1,825 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI智能课程规划与学业辅助系统 - 纯前端演示</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            color: #333;
+        }
+
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+
+        .header {
+            text-align: center;
+            margin-bottom: 32px;
+            color: white;
+        }
+
+        .header h1 {
+            font-size: 2.2rem;
+            margin-bottom: 8px;
+            text-shadow: 0 2px 4px rgba(0,0,0,0.3);
+        }
+
+        .header p {
+            font-size: 16px;
+            opacity: 0.9;
+        }
+
+        .mode-selector {
+            background: rgba(255,255,255,0.1);
+            border-radius: 8px;
+            padding: 16px;
+            margin-bottom: 20px;
+            backdrop-filter: blur(10px);
+        }
+
+        .card {
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.08);
+            padding: 24px;
+            margin-bottom: 20px;
+            border: 1px solid #f0f0f0;
+        }
+
+        .card h2 {
+            color: #1890ff;
+            margin-bottom: 16px;
+            font-size: 1.5rem;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .button {
+            padding: 8px 16px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 14px;
+            margin: 0 4px;
+            transition: all 0.3s ease;
+        }
+
+        .button.primary {
+            background: #1890ff;
+            color: white;
+        }
+
+        .button.secondary {
+            background: #52c41a;
+            color: white;
+        }
+
+        .button.disabled {
+            background: #f5f5f5;
+            color: #ccc;
+            cursor: not-allowed;
+        }
+
+        .loading {
+            display: inline-block;
+            width: 16px;
+            height: 16px;
+            border: 2px solid #f3f3f3;
+            border-top: 2px solid #1890ff;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            margin-right: 8px;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        .recommendation-item {
+            padding: 16px;
+            border: 1px solid #e6f7ff;
+            border-radius: 8px;
+            margin-bottom: 12px;
+            background: linear-gradient(135deg, #f6ffed 0%, #ffffff 100%);
+        }
+
+        .recommendation-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            margin-bottom: 8px;
+        }
+
+        .recommendation-title {
+            font-weight: bold;
+            color: #1890ff;
+            font-size: 1.1rem;
+        }
+
+        .score-badge {
+            background: #1890ff;
+            color: white;
+            padding: 4px 8px;
+            border-radius: 12px;
+            font-size: 12px;
+            font-weight: bold;
+        }
+
+        .reasons {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 6px;
+            margin-top: 8px;
+        }
+
+        .reason-tag {
+            background: #e6f7ff;
+            color: #1890ff;
+            padding: 4px 8px;
+            border-radius: 12px;
+            font-size: 12px;
+        }
+
+        .plan-item {
+            margin-bottom: 24px;
+        }
+
+        .plan-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 16px;
+        }
+
+        .plan-title {
+            font-weight: bold;
+            color: #52c41a;
+        }
+
+        .goal-badge {
+            background: #52c41a;
+            color: white;
+            padding: 6px 12px;
+            border-radius: 16px;
+            font-size: 14px;
+        }
+
+        .progress-bar {
+            width: 100%;
+            height: 8px;
+            background: #f0f0f0;
+            border-radius: 4px;
+            overflow: hidden;
+            margin: 8px 0;
+        }
+
+        .progress-fill {
+            height: 100%;
+            background: #52c41a;
+            transition: width 0.3s ease;
+        }
+
+        .semester-item {
+            padding: 16px;
+            border: 1px solid #f0f0f0;
+            border-radius: 8px;
+            margin-bottom: 12px;
+            background: #fafafa;
+        }
+
+        .semester-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 8px;
+        }
+
+        .semester-title {
+            font-weight: bold;
+            color: #52c41a;
+        }
+
+        .status-badge {
+            padding: 2px 8px;
+            border-radius: 12px;
+            font-size: 12px;
+            color: white;
+        }
+
+        .status-active {
+            background: #1890ff;
+        }
+
+        .status-planned {
+            background: #d9d9d9;
+        }
+
+        .course-tag {
+            display: inline-block;
+            background: #fff1f0;
+            color: #f5222d;
+            padding: 2px 6px;
+            border-radius: 4px;
+            margin: 2px 4px 2px 0;
+            font-size: 12px;
+        }
+
+        .course-high {
+            background: #fff1f0;
+            color: #f5222d;
+        }
+
+        .course-medium {
+            background: #f6ffed;
+            color: #52c41a;
+        }
+
+        .chat-container {
+            border: 1px solid #f0f0f0;
+            border-radius: 8px;
+            padding: 16px;
+            margin-bottom: 16px;
+            max-height: 300px;
+            overflow-y: auto;
+            background: #fafafa;
+        }
+
+        .message {
+            margin-bottom: 12px;
+            display: flex;
+            justify-content: flex-start;
+        }
+
+        .message.user {
+            justify-content: flex-end;
+        }
+
+        .message-content {
+            max-width: 70%;
+            padding: 12px 16px;
+            border-radius: 16px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+
+        .message.user .message-content {
+            background: #1890ff;
+            color: white;
+        }
+
+        .message.assistant .message-content {
+            background: white;
+            color: #333;
+            border: 1px solid #f0f0f0;
+        }
+
+        .message-header {
+            font-weight: bold;
+            margin-bottom: 4px;
+        }
+
+        .message-time {
+            font-size: 12px;
+            opacity: 0.7;
+            margin-top: 4px;
+        }
+
+        .input-group {
+            display: flex;
+            gap: 12px;
+            align-items: flex-end;
+        }
+
+        .input-field {
+            flex: 1;
+            min-height: 60px;
+            padding: 12px;
+            border: 1px solid #d9d9d9;
+            border-radius: 8px;
+            resize: vertical;
+            font-size: 14px;
+            font-family: inherit;
+        }
+
+        .quick-questions {
+            margin-top: 16px;
+        }
+
+        .quick-questions h4 {
+            font-size: 14px;
+            color: #666;
+            margin-bottom: 8px;
+        }
+
+        .question-tags {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+        }
+
+        .question-tag {
+            background: #f0f0f0;
+            color: #666;
+            padding: 6px 12px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 12px;
+            transition: all 0.2s;
+        }
+
+        .question-tag:hover {
+            background: #e6f7ff;
+            color: #1890ff;
+        }
+
+        .footer {
+            text-align: center;
+            margin-top: 40px;
+            color: white;
+            opacity: 0.8;
+        }
+
+        .api-url-input {
+            padding: 6px 12px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            width: 300px;
+            font-size: 14px;
+            margin-left: 8px;
+        }
+
+        .hidden {
+            display: none;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header class="header">
+            <h1>🤖 AI智能课程规划与学业辅助系统</h1>
+            <p>一键体验AI推荐、学业规划、智能对话 - 纯前端实现，无需服务器</p>
+
+            <div class="mode-selector">
+                <div style="margin-bottom: 12px;">
+                    <strong>工作模式：</strong>
+                    <button class="button secondary" id="mockBtn">🔄 本地模拟</button>
+                    <button class="button" id="apiBtn">🌐 API联网</button>
+                </div>
+
+                <div id="apiConfig" class="hidden">
+                    <label><strong>API地址：</strong></label>
+                    <input type="url" class="api-url-input" id="apiUrlInput" value="https://your.api.url/api" placeholder="https://your-api.com/api">
+                </div>
+            </div>
+        </header>
+
+        <main>
+            <!-- AI课程推荐 -->
+            <section class="card">
+                <h2>🎯 智能课程推荐</h2>
+                <div style="margin-bottom: 20px;">
+                    <button class="button primary" id="recommendBtn">
+                        <span id="recommendLoading" class="loading hidden"></span>
+                        🚀 生成AI推荐
+                    </button>
+                </div>
+
+                <div id="recommendationsContainer">
+                    <!-- 推荐结果将在这里显示 -->
+                </div>
+            </section>
+
+            <!-- AI学业规划 -->
+            <section class="card">
+                <h2>📅 AI学业规划</h2>
+                <div style="margin-bottom: 20px;">
+                    <button class="button primary" id="planBtn">
+                        <span id="planLoading" class="loading hidden"></span>
+                        📋 生成学习规划
+                    </button>
+                </div>
+
+                <div id="plansContainer">
+                    <!-- 规划结果将在这里显示 -->
+                </div>
+            </section>
+
+            <!-- AI对话助手 -->
+            <section class="card">
+                <h2>💬 AI对话助手</h2>
+                <p style="color: #666; margin-bottom: 20px;">随时提问，获得专业学习指导和建议</p>
+
+                <!-- 对话历史 -->
+                <div class="chat-container" id="chatContainer">
+                    <div class="message assistant">
+                        <div class="message-content">
+                            <div class="message-header">🤖 AI助手</div>
+                            <div>你好！我是AI学习助手，可以帮你解答学习问题、推荐课程、制定学习计划。试试输入：前端开发需要学什么？</div>
+                            <div class="message-time">12:00:00</div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 输入框 -->
+                <form class="input-group" id="chatForm">
+                    <textarea
+                        class="input-field"
+                        id="chatInput"
+                        placeholder="输入你的学习问题，比如：'前端开发需要学什么？' 或 '如何制定学习计划？'"
+                        rows="2"
+                    ></textarea>
+                    <button type="submit" class="button primary" id="sendBtn">
+                        📤 发送
+                    </button>
+                </form>
+
+                <!-- 快捷问题 -->
+                <div class="quick-questions">
+                    <h4>💡 试试这些问题：</h4>
+                    <div class="question-tags">
+                        <span class="question-tag" data-question="前端开发需要学什么？">前端开发需要学什么？</span>
+                        <span class="question-tag" data-question="如何制定学习计划？">如何制定学习计划？</span>
+                        <span class="question-tag" data-question="考研需要准备哪些科目？">考研需要准备哪些科目？</span>
+                        <span class="question-tag" data-question="时间管理有哪些方法？">时间管理有哪些方法？</span>
+                    </div>
+                </div>
+            </section>
+        </main>
+
+        <footer class="footer">
+            <p>🎓 河北工业职业技术大学互联网学院</p>
+            <p style="font-size: 14px;">AI智能课程规划与学业辅助系统 - 纯前端实现</p>
+        </footer>
+    </div>
+
+    <script>
+        // 状态管理
+        let state = {
+            mode: 'mock', // 'mock' | 'api'
+            apiUrl: 'https://your.api.url/api',
+            recommendations: [],
+            plans: [],
+            chatMessages: [{
+                role: 'assistant',
+                content: '你好！我是AI学习助手，可以帮你解答学习问题、推荐课程、制定学习计划。试试输入：前端开发需要学什么？',
+                timestamp: new Date().toLocaleTimeString()
+            }],
+            loading: false
+        };
+
+        // DOM 元素引用
+        const mockBtn = document.getElementById('mockBtn');
+        const apiBtn = document.getElementById('apiBtn');
+        const apiConfig = document.getElementById('apiConfig');
+        const apiUrlInput = document.getElementById('apiUrlInput');
+        const recommendBtn = document.getElementById('recommendBtn');
+        const recommendLoading = document.getElementById('recommendLoading');
+        const recommendationsContainer = document.getElementById('recommendationsContainer');
+        const planBtn = document.getElementById('planBtn');
+        const planLoading = document.getElementById('planLoading');
+        const plansContainer = document.getElementById('plansContainer');
+        const chatForm = document.getElementById('chatForm');
+        const chatInput = document.getElementById('chatInput');
+        const sendBtn = document.getElementById('sendBtn');
+        const chatContainer = document.getElementById('chatContainer');
+
+        // 模拟数据
+        const mockRecommendations = [
+            {
+                courseName: 'React全栈开发',
+                courseCode: 'CS401',
+                credits: 3,
+                score: 95,
+                reasons: ['完美匹配前端开发兴趣', '市场需求大', '技术栈现代']
+            },
+            {
+                courseName: '人工智能导论',
+                courseCode: 'AI101',
+                credits: 3,
+                score: 88,
+                reasons: ['AI技能是未来趋势', '与专业结合性好']
+            },
+            {
+                courseName: '数据库系统',
+                courseCode: 'CS301',
+                credits: 3,
+                score: 85,
+                reasons: ['计算机专业必修', '实践性强', '就业帮助大']
+            }
+        ];
+
+        const mockPlan = {
+            title: '前端开发学习规划',
+            goal: '就业',
+            progress: 25,
+            totalCredits: 12,
+            completedCredits: 3,
+            semesters: [
+                {
+                    semester: '2024-秋季',
+                    status: '进行中',
+                    courses: [
+                        { courseId: 'web101', courseName: 'Web开发基础', priority: '高' },
+                        { courseId: 'cs201', courseName: '数据结构', priority: '高' },
+                        { courseId: 'ui101', courseName: '用户界面设计', priority: '中' }
+                    ]
+                },
+                {
+                    semester: '2025-春季',
+                    status: '规划中',
+                    courses: [
+                        { courseId: 'react101', courseName: 'React框架', priority: '高' },
+                        { courseId: 'node101', courseName: 'Node.js后端开发', priority: '高' }
+                    ]
+                }
+            ]
+        };
+
+        const mockChatResponses = [
+            '这是一个很好的问题！前端开发需要掌握HTML、CSS、JavaScript等基础知识，还需要学习React、Vue等框架技术。建议按照"基础→框架→工具→项目"的顺序学习。',
+            '关于学业规划，我建议你制定一个阶段性的学习计划：短期目标（这学期）、中期目标（这个学年）、长期目标（毕业后）。同时要注意平衡专业课和兴趣培养。',
+            '对于课程选择，我推荐你优先选择与职业发展相关的专业课程，同时适当选修一些通识课程来拓宽知识面。可以通过学校选课系统了解课程评价和难度。',
+            '学习方法上，建议采用"预习-听课-复习-实践"的模式。预习可以帮助你更好地理解课堂内容，实践则是检验学习效果的重要方式。',
+            '关于时间管理，可以尝试"番茄工作法"：25分钟专注学习+5分钟休息，4个番茄钟后进行较长休息。这样可以提高学习效率。'
+        ];
+
+        // 工具函数
+        function setLoading(button, loadingSpan, isLoading) {
+            if (isLoading) {
+                button.disabled = true;
+                loadingSpan.classList.remove('hidden');
+                button.innerHTML = button.innerHTML.replace('🚀 生成AI推荐', '🔄 AI分析中...').replace('📋 生成学习规划', '🔄 AI规划中...');
+            } else {
+                button.disabled = false;
+                loadingSpan.classList.add('hidden');
+                button.innerHTML = button.innerHTML.replace('🔄 AI分析中...', '🚀 生成AI推荐').replace('🔄 AI规划中...', '📋 生成学习规划');
+            }
+        }
+
+        function getMockChatResponse(question) {
+            return mockChatResponses[Math.floor(Math.random() * mockChatResponses.length)];
+        }
+
+        // API请求函数
+        async function makeApiRequest(endpoint, options = {}) {
+            try {
+                const response = await fetch(state.apiUrl + endpoint, {
+                    headers: {
+                        'Content-Type': 'application/json',
+                        ...options.headers
+                    },
+                    ...options
+                });
+
+                if (!response.ok) {
+                    throw new Error(`HTTP error! status: ${response.status}`);
+                }
+
+                const data = await response.json();
+                return data.success ? data.data : null;
+            } catch (error) {
+                console.error('API request failed:', error);
+                return null;
+            }
+        }
+
+        // 渲染函数
+        function renderRecommendations() {
+            if (state.recommendations.length === 0) {
+                recommendationsContainer.innerHTML = '';
+                return;
+            }
+
+            recommendationsContainer.innerHTML = `
+                <h3 style="color: #666; margin-bottom: 16px;">📚 推荐结果</h3>
+                <div style="display: grid; gap: 12px;">
+                    ${state.recommendations.map(item => `
+                        <div class="recommendation-item">
+                            <div class="recommendation-header">
+                                <div class="recommendation-title">${item.courseName}</div>
+                                <div class="score-badge">${item.score}分</div>
+                            </div>
+
+                            ${item.courseCode || item.credits ? `
+                                <div style="font-size: 14px; color: #666; margin-bottom: 8px;">
+                                    ${item.courseCode ? `课程代码: ${item.courseCode}` : ''}
+                                    ${item.credits ? `<span style="margin-left: 16px;">学分: ${item.credits}</span>` : ''}
+                                </div>
+                            ` : ''}
+
+                            <div style="color: #52c41a; font-weight: bold; margin-bottom: 4px;">💡 推荐理由：</div>
+                            <div class="reasons">
+                                ${item.reasons.map(reason => `<span class="reason-tag">${reason}</span>`).join('')}
+                            </div>
+                        </div>
+                    `).join('')}
+                </div>
+            `;
+        }
+
+        function renderPlans() {
+            if (state.plans.length === 0) {
+                plansContainer.innerHTML = '';
+                return;
+            }
+
+            plansContainer.innerHTML = state.plans.map(plan => `
+                <div class="plan-item">
+                    <div class="plan-header">
+                        <div class="plan-title">${plan.title}</div>
+                        <div class="goal-badge">🎯 ${plan.goal}</div>
+                    </div>
+
+                    ${(plan.totalCredits || plan.completedCredits) ? `
+                        <div style="margin-bottom: 16px;">
+                            <div style="font-size: 14px; color: #666; margin-bottom: 4px;">
+                                📊 学分进度: ${plan.completedCredits || 0} / ${plan.totalCredits || 0}
+                            </div>
+                            <div class="progress-bar">
+                                <div class="progress-fill" style="width: ${plan.progress}%"></div>
+                            </div>
+                            <div style="text-align: center; font-size: 12px; color: #666; margin-top: 4px;">
+                                总体进度: ${plan.progress}%
+                            </div>
+                        </div>
+                    ` : ''}
+
+                    <h4 style="color: #666; margin-bottom: 12px;">📚 学期安排</h4>
+                    <div style="display: grid; gap: 12px;">
+                        ${plan.semesters.map(sem => `
+                            <div class="semester-item">
+                                <div class="semester-header">
+                                    <div class="semester-title">${sem.semester}</div>
+                                    ${sem.status ? `
+                                        <span class="status-badge ${sem.status === '进行中' ? 'status-active' : 'status-planned'}">
+                                            ${sem.status}
+                                        </span>
+                                    ` : ''}
+                                </div>
+
+                                <div style="font-size: 14px; color: #666;">
+                                    ${sem.courses.map(course => `
+                                        <span class="course-tag ${course.priority === '高' ? 'course-high' : 'course-medium'}">
+                                            ${course.courseName || course.courseId} (${course.priority}优先级)
+                                        </span>
+                                    `).join('')}
+                                </div>
+                            </div>
+                        `).join('')}
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        function renderChatMessages() {
+            chatContainer.innerHTML = state.chatMessages.map(msg => `
+                <div class="message ${msg.role}">
+                    <div class="message-content">
+                        <div class="message-header">${msg.role === 'assistant' ? '🤖 AI助手' : '👤 你'}</div>
+                        <div>${msg.content}</div>
+                        ${msg.timestamp ? `<div class="message-time">${msg.timestamp}</div>` : ''}
+                    </div>
+                </div>
+            `).join('');
+
+            // 滚动到底部
+            chatContainer.scrollTop = chatContainer.scrollHeight;
+        }
+
+        // 事件处理器
+        mockBtn.addEventListener('click', () => {
+            state.mode = 'mock';
+            mockBtn.className = 'button secondary';
+            apiBtn.className = 'button';
+            apiConfig.classList.add('hidden');
+        });
+
+        apiBtn.addEventListener('click', () => {
+            state.mode = 'api';
+            mockBtn.className = 'button';
+            apiBtn.className = 'button secondary';
+            apiConfig.classList.remove('hidden');
+        });
+
+        apiUrlInput.addEventListener('input', (e) => {
+            state.apiUrl = e.target.value;
+        });
+
+        recommendBtn.addEventListener('click', async () => {
+            setLoading(recommendBtn, recommendLoading, true);
+
+            try {
+                if (state.mode === 'api') {
+                    const data = await makeApiRequest('/recommendations');
+                    state.recommendations = data || [];
+                } else {
+                    // 模拟延迟
+                    await new Promise(resolve => setTimeout(resolve, 1500));
+                    state.recommendations = mockRecommendations;
+                }
+                renderRecommendations();
+            } catch (error) {
+                console.error('获取推荐失败:', error);
+                state.recommendations = mockRecommendations;
+                renderRecommendations();
+            }
+
+            setLoading(recommendBtn, recommendLoading, false);
+        });
+
+        planBtn.addEventListener('click', async () => {
+            setLoading(planBtn, planLoading, true);
+
+            try {
+                if (state.mode === 'api') {
+                    const data = await makeApiRequest('/academic-plan');
+                    state.plans = data ? [data] : [];
+                } else {
+                    // 模拟延迟
+                    await new Promise(resolve => setTimeout(resolve, 1500));
+                    state.plans = [mockPlan];
+                }
+                renderPlans();
+            } catch (error) {
+                console.error('生成规划失败:', error);
+                state.plans = [mockPlan];
+                renderPlans();
+            }
+
+            setLoading(planBtn, planLoading, false);
+        });
+
+        chatForm.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const message = chatInput.value.trim();
+            if (!message) return;
+
+            // 添加用户消息
+            state.chatMessages.push({
+                role: 'user',
+                content: message,
+                timestamp: new Date().toLocaleTimeString()
+            });
+
+            chatInput.value = '';
+            renderChatMessages();
+
+            // AI回复
+            try {
+                let aiResponse;
+                if (state.mode === 'api') {
+                    const data = await makeApiRequest('/chat', {
+                        method: 'POST',
+                        body: JSON.stringify({ question: message })
+                    });
+                    aiResponse = data?.answer || '抱歉，我暂时无法回答您的问题。';
+                } else {
+                    // 模拟延迟
+                    await new Promise(resolve => setTimeout(resolve, 1000 + Math.random() * 1000));
+                    aiResponse = getMockChatResponse(message);
+                }
+
+                state.chatMessages.push({
+                    role: 'assistant',
+                    content: aiResponse,
+                    timestamp: new Date().toLocaleTimeString()
+                });
+
+                renderChatMessages();
+            } catch (error) {
+                console.error('发送消息失败:', error);
+                state.chatMessages.push({
+                    role: 'assistant',
+                    content: '网络连接失败，请检查网络或切换到本地模拟模式。',
+                    timestamp: new Date().toLocaleTimeString()
+                });
+                renderChatMessages();
+            }
+        });
+
+        // 快捷问题点击
+        document.querySelectorAll('.question-tag').forEach(tag => {
+            tag.addEventListener('click', () => {
+                chatInput.value = tag.dataset.question;
+                chatInput.focus();
+            });
+        });
+
+        // 初始化
+        renderChatMessages();
+    </script>
+</body>
+</html>
