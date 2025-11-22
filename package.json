@@ -1,0 +1,22 @@
+{
+  "name": "ai-course-planner",
+  "version": "1.0.0",
+  "description": "AI智能课程规划与学业辅助系统 - 校园生活助手",
+  "main": "index.js",
+  "scripts": {
+    "dev": "concurrently \"npm run dev:backend\" \"npm run dev:frontend\"",
+    "dev:frontend": "cd frontend && npm start",
+    "dev:backend": "cd backend && npm run dev",
+    "install:all": "npm install && cd frontend && npm install && cd ../backend && npm install",
+    "build": "cd frontend && npm run build",
+    "start": "cd backend && npm start",
+    "init-db": "cd backend && npm run init-db",
+    "clean": "cd frontend && npm run clean && cd ../backend && npm run clean"
+  },
+  "keywords": ["ai", "education", "course-planning", "campus-assistant"],
+  "author": "河北工业职业技术大学互联网学院",
+  "license": "MIT",
+  "devDependencies": {
+    "concurrently": "^8.2.2"
+  }
+}
